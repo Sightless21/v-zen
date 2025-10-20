@@ -1,0 +1,197 @@
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id         Int     @id @default(autoincrement())
+  lineUserId String  @unique
+  name       String
+  email      String  @unique
+  phone      String?
+  address    String?
+
+  // Relation fields
+  products       Product[]
+  repairRequests RepairRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Technician {
+  id             Int     @id @default(autoincrement())
+  name           String
+  email          String? @unique
+  phone          String?
+  specialization String?
+
+  // Relation fields
+  repairJobs RepairJob[]
+  repairLogs RepairLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Product {
+  id          Int     @id @default(autoincrement())
+  productCode String  @unique
+  name        String
+  model       String
+  description String?
+
+  // Relation fields
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int
+
+  repairRequests RepairRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RepairRequest {
+  id                 Int                 @id @default(autoincrement())
+  requestNo          String              @unique
+  problemDescription String
+  requestDate        DateTime            @default(now())
+  status             RepairRequestStatus @default(PENDING)
+
+  // Relation fields
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+
+  // Relation fields
+  repairJob RepairJob?
+}
+
+model RepairJob {
+  id             Int            @id @default(autoincrement())
+  jobNo          String         @unique
+  assignedDate   DateTime?      @default(now())
+  jobStatus      JobStatus      @default(PENDING)
+  totalCost      Decimal        @default(0.00) @db.Decimal(10, 2)
+  approvalStatus ApprovalStatus @default(WAITING)
+  approvalDate   DateTime?
+  approvedBy     String?
+  completedDate  DateTime?
+
+  // Relation fields
+  repairRequest   RepairRequest @relation(fields: [repairRequestId], references: [id])
+  repairRequestId Int           @unique
+  technician      Technician    @relation(fields: [technicianId], references: [id])
+  technicianId    Int
+
+  repairJobItems  RepairJobItem[]
+  repairApprovals RepairApproval[]
+  repairLogs      RepairLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RepairJobItem {
+  id          Int         @id @default(autoincrement())
+  itemType    JobItemType
+  description String
+  quantity    Int         @default(1)
+  unitPrice   Decimal     @db.Decimal(10, 2)
+  totalPrice  Decimal     @db.Decimal(10, 2)
+  remarks     String?
+
+  // Relation fields
+  repairJob   RepairJob @relation(fields: [repairJobId], references: [id])
+  repairJobId Int
+}
+
+model RepairApproval {
+  id             Int            @id @default(autoincrement())
+  approverName   String
+  approvalDate   DateTime       @default(now())
+  approvalStatus ApprovalStatus @default(WAITING)
+  comments       String?
+
+  // Relation fields
+  repairJob   RepairJob @relation(fields: [repairJobId], references: [id])
+  repairJobId Int
+}
+
+model RepairLog {
+  id          Int       @id @default(autoincrement())
+  action      String
+  logDate     DateTime  @default(now())
+  statusAfter JobStatus
+  notes       String?
+
+  // Relation fields
+  repairJob    RepairJob  @relation(fields: [repairJobId], references: [id])
+  repairJobId  Int
+  technician   Technician @relation(fields: [technicianId], references: [id])
+  technicianId Int
+
+  createdAt DateTime @default(now())
+}
+
+// สถานะของใบแจ้งซ่อม (RepairRequest)
+// ใช้ในการติดตาม workflow ก่อนออกใบงานซ่อม
+enum RepairRequestStatus {
+  PENDING // ใบแจ้งซ่อมถูกสร้างโดยลูกค้า ยังไม่มีเจ้าหน้าที่รับเรื่อง
+  RECEIVED // เจ้าหน้าที่รับเรื่องแล้ว
+  UNDER_REVIEW // กำลังตรวจสอบข้อมูล/อาการเบื้องต้น
+  APPROVED // อนุมัติให้สร้างใบงานซ่อม (สามารถสร้าง RepairJob ได้)
+  REJECTED // ปฏิเสธคำขอซ่อม (เช่น หมดประกันหรือไม่อยู่ในเงื่อนไข)
+  CANCELLED // ลูกค้ายกเลิกคำขอเอง
+  JOB_CREATED // สร้างใบงานซ่อมจริงแล้ว (เชื่อม RepairJob)
+}
+
+// สถานะของใบงานซ่อม (RepairJob) สำหรับติดตาม workflow ระหว่างซ่อม
+enum JobStatus {
+  PENDING // ใบงานซ่อมถูกสร้าง ยังไม่ได้เริ่มดำเนินการ
+  IN_PROGRESS // งานกำลังดำเนินการโดยช่าง
+  WAITING_PARTS // รออะไหล่ / รออนุมัติค่าใช้จ่าย
+  APPROVED // งานได้รับอนุมัติ (อาจจากผู้จัดการ/บัญชี)
+  COMPLETED // งานซ่อมเสร็จเรียบร้อยแล้ว
+  RETURNED // ส่งสินค้าคืนลูกค้าแล้ว
+  CANCELLED // งานถูกยกเลิก
+}
+
+// สถานะรวมสำหรับงานซ่อม (RepairStatus) 
+// ใช้เพื่อมองภาพรวม workflow ทั้งใบแจ้งซ่อม + ใบงานซ่อม
+enum RepairStatus {
+  PENDING // ยังไม่มีการกำหนดช่างหรือเริ่มงาน
+  ASSIGNED // งานถูกมอบหมายให้ช่าง
+  IN_PROGRESS // งานกำลังดำเนินการ
+  WAITING_PARTS // รออะไหล่ / รออนุมัติ
+  REPAIRED // งานซ่อมเสร็จเรียบร้อย แต่ยังไม่ส่งคืน
+  RETURNED // ส่งสินค้าคืนลูกค้าแล้ว
+  CANCELLED // งานถูกยกเลิก
+}
+
+// สถานะการอนุมัติ (RepairApproval)
+// ใช้กำหนดขั้นตอนการอนุมัติใบงานซ่อม
+enum ApprovalStatus {
+  WAITING // รออนุมัติ
+  APPROVED // อนุมัติเรียบร้อย
+  REJECTED // ไม่อนุมัติ
+}
+
+// ประเภทของรายการในใบงานซ่อม (RepairJobItem)
+// เพื่อแยกประเภทค่าใช้จ่ายหรือรายการซ่อม
+enum JobItemType {
+  PART // อะไหล่ / ชิ้นส่วน
+  LABOR // ค่าแรงช่าง
+  SERVICE // บริการอื่น ๆ (เช่น ทำความสะอาด, config)
+  OTHER // รายการอื่นที่ไม่เข้าประเภทข้างต้น
+}
