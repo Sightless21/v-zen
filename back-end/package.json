@@ -3,7 +3,10 @@
   "version": "1.0.50",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "generate": "bunx prisma generate",
+    "seed": "bun run prisma/seed.ts",
+    "dev": "bun run --watch src/index.ts",
+    "check": "bun run src/check.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
