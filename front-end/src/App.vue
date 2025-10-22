@@ -210,26 +210,7 @@ const initializeLiff = async () => {
     
     if (liff.isLoggedIn()) {
       isLoggedIn.value = true;
-      const idToken = await liff.getIDToken();
-
-      let res;
-      try {
-        res = await axios.post(`${API_BASE}/api/v1/auth/verify`, {
-          idToken: idToken
-        },{
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          withCredentials: true
-        });
-        console.log('การยืนยันตัวตนสำเร็จ:', res.data);
-        if (res.data && res.data.token) {
-          localStorage.setItem('token', res.data.token);
-        }
-      } catch (err) {
-        console.error('การยืนยันตัวตนล้มเหลว:', err);
-      }
-
+      await getIDToken();
       await getUserProfile();
       getLiffContext();
       error.value = '';
@@ -240,6 +221,12 @@ const initializeLiff = async () => {
     message.value = 'เริ่มต้น LIFF ล้มเหลว';
     error.value = `${e}`;
   }
+};
+
+const getIDToken = () => {
+  const idToken = liff.getIDToken();
+  console.log('ID Token:', idToken);
+  return idToken;
 };
 
 const getUserProfile = async () => {
