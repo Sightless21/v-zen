@@ -199,17 +199,15 @@ const API_BASE = import.meta.env.VITE_BASE_URL || "https://abc123.ngrok.io";
 
 const initializeLiff = async () => {
 
-  const idToken = await liff.getIDToken();
-  
   try {
     await liff.init({
       liffId: import.meta.env.VITE_LIFF_ID
     });
-
+    
     message.value = 'เริ่มต้น LIFF สำเร็จ';
     liffVersion.value = liff.getVersion();
     liffLanguage.value = liff.getLanguage();
-
+    const idToken = await liff.getIDToken();
     if (liff.isLoggedIn()) {
       isLoggedIn.value = true;
 
