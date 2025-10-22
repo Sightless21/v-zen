@@ -195,7 +195,7 @@ const liffContext = ref<LiffContext>({
 });
 const liffLanguage = ref('');
 const liffVersion = ref('');
-const API_BASE = import.meta.env.API_BASE;
+const API_BASE = import.meta.env.VITE_BASE_URL || "https://abc123.ngrok.io";
 
 const initializeLiff = async () => {
   
