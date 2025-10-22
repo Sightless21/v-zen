@@ -207,9 +207,10 @@ const initializeLiff = async () => {
     message.value = 'เริ่มต้น LIFF สำเร็จ';
     liffVersion.value = liff.getVersion();
     liffLanguage.value = liff.getLanguage();
-    const idToken = await liff.getIDToken();
+    
     if (liff.isLoggedIn()) {
       isLoggedIn.value = true;
+      const idToken = await liff.getIDToken();
 
       let res;
       try {
