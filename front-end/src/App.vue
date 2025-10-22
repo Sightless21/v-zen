@@ -202,6 +202,10 @@ const initializeLiff = async () => {
   try {
     await liff.init({
       liffId: import.meta.env.VITE_LIFF_ID
+    })
+    .then(() => {
+      const idToken = liff.getIDToken();
+      console.log('ID Token:', idToken);
     });
     
     message.value = 'เริ่มต้น LIFF สำเร็จ';
@@ -210,7 +214,6 @@ const initializeLiff = async () => {
     
     if (liff.isLoggedIn()) {
       isLoggedIn.value = true;
-      await getIDToken();
       await getUserProfile();
       getLiffContext();
       error.value = '';
@@ -223,11 +226,6 @@ const initializeLiff = async () => {
   }
 };
 
-const getIDToken = () => {
-  const idToken = liff.getIDToken();
-  console.log('ID Token:', idToken);
-  return idToken;
-};
 
 const getUserProfile = async () => {
   try {
