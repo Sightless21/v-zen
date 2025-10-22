@@ -213,7 +213,7 @@ const initializeLiff = async () => {
 
       let res;
       try {
-        res = await axios.post(`${API_BASE}/api/auth/verify`, {
+        res = await axios.post(`${API_BASE}/api/v1/auth/verify`, {
           idToken: await liff.getIDToken()
         });
         console.log('การยืนยันตัวตนสำเร็จ:', res.data);
