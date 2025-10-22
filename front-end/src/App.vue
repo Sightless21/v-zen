@@ -198,6 +198,8 @@ const liffVersion = ref('');
 const API_BASE = import.meta.env.VITE_BASE_URL || "https://abc123.ngrok.io";
 
 const initializeLiff = async () => {
+
+  const idToken = await liff.getIDToken();
   
   try {
     await liff.init({
@@ -214,7 +216,12 @@ const initializeLiff = async () => {
       let res;
       try {
         res = await axios.post(`${API_BASE}/api/v1/auth/verify`, {
-          idToken: await liff.getIDToken()
+          idToken: idToken
+        },{
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
         });
         console.log('การยืนยันตัวตนสำเร็จ:', res.data);
         if (res.data && res.data.token) {
