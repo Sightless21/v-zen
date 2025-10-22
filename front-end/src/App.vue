@@ -195,7 +195,6 @@ const liffContext = ref<LiffContext>({
 });
 const liffLanguage = ref('');
 const liffVersion = ref('');
-const API_BASE = import.meta.env.VITE_BASE_URL || "https://abc123.ngrok.io";
 
 const initializeLiff = async () => {
 
@@ -203,17 +202,23 @@ const initializeLiff = async () => {
     await liff.init({
       liffId: import.meta.env.VITE_LIFF_ID
     })
-    .then(() => {
-      const idToken = liff.getIDToken();
-      console.log('ID Token:', idToken);
-    });
-    
-    message.value = 'เริ่มต้น LIFF สำเร็จ';
-    liffVersion.value = liff.getVersion();
-    liffLanguage.value = liff.getLanguage();
-    
+      .then(() => {
+        const idToken = liff.getIDToken();
+        message.value = 'เริ่มต้น LIFF สำเร็จ';
+        liffVersion.value = liff.getVersion();
+        liffLanguage.value = liff.getLanguage();
+      });
+
     if (liff.isLoggedIn()) {
       isLoggedIn.value = true;
+
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/verify`, {
+        idToken: liff.getIDToken()
+      }).then((response) => {
+        console.log('การยืนยันตัวตนสำเร็จ:', response.data);
+      }).catch((err) => {
+        console.error('การยืนยันตัวตนล้มเหลว:', err);
+      });
       await getUserProfile();
       getLiffContext();
       error.value = '';
