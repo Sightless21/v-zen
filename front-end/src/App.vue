@@ -214,6 +214,11 @@ const initializeLiff = async () => {
 
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/verify`, {
         idToken: liff.getIDToken()
+      }, {
+        withCredentials: true, 
+        headers: {
+          'Content-Type': 'application/json'
+        }
       }).then((response) => {
         console.log('การยืนยันตัวตนสำเร็จ:', response.data);
       }).catch((err) => {
