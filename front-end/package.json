@@ -9,6 +9,7 @@
   "dependencies": {
     "@line/liff": "2.27.2",
     "@tailwindcss/vite": "^4.1.14",
+    "axios": "^1.12.2",
     "pinia": "^3.0.3",
     "tailwindcss": "^4.1.14",
     "vue": "3.5.22",

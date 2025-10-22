@@ -9,11 +9,16 @@
     "check": "bun run src/check.ts"
   },
   "dependencies": {
+    "@elysiajs/cors": "^1.4.0",
     "@prisma/client": "^6.17.1",
+    "axios": "^1.12.2",
+    "dotenv": "^17.2.3",
     "elysia": "latest"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
     "bun-types": "latest",
+    "jsonwebtoken": "^9.0.2",
     "prisma": "^6.17.1",
     "prismabox": "^1.1.25"
   },

@@ -23,8 +23,6 @@
         </div>
       </div>
 
-
-
       <!-- Profile Card -->
       <div v-if="isLoggedIn && profile" class="card bg-base-100 shadow-xl mb-6">
         <div class="card-body">
@@ -163,11 +161,13 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import axios from 'axios';
 import { ref, onMounted } from 'vue';
 import liff from '@line/liff';
 
@@ -208,6 +208,20 @@ const initializeLiff = async () => {
 
     if (liff.isLoggedIn()) {
       isLoggedIn.value = true;
+
+      let res;
+      try {
+        res = await axios.post('http://localhost:3000/api/auth/verify', {
+          idToken: await liff.getIDToken()
+        });
+        console.log('การยืนยันตัวตนสำเร็จ:', res.data);
+        if (res.data && res.data.token) {
+          localStorage.setItem('token', res.data.token);
+        }
+      } catch (err) {
+        console.error('การยืนยันตัวตนล้มเหลว:', err);
+      }
+
       await getUserProfile();
       getLiffContext();
       error.value = '';
