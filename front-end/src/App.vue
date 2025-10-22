@@ -195,8 +195,10 @@ const liffContext = ref<LiffContext>({
 });
 const liffLanguage = ref('');
 const liffVersion = ref('');
+const API_BASE = import.meta.env.API_BASE;
 
 const initializeLiff = async () => {
+  
   try {
     await liff.init({
       liffId: import.meta.env.VITE_LIFF_ID
@@ -211,7 +213,7 @@ const initializeLiff = async () => {
 
       let res;
       try {
-        res = await axios.post('http://localhost:3000/api/auth/verify', {
+        res = await axios.post(`${API_BASE}/api/auth/verify`, {
           idToken: await liff.getIDToken()
         });
         console.log('การยืนยันตัวตนสำเร็จ:', res.data);
